@@ -1,0 +1,9 @@
+Rekorde:
+
+Die Meisten Einzelfahrten:
+
+SELECT Name, Vorname, Ort, Jahrgang, Club, count(*) as Anzahl FROM zeiten, teilnehmer WHERE zeiten.TeilnehmerKey = teilnehmer.TeilnehmerKey GROUP BY zeiten.TeilnehmerKey ORDER BY anzahl DESC
+
+Die Meisten Einzelfahrten pro Strecke:
+
+SELECT Name, Vorname, Ort, Jahrgang, Club, strecken.Streckenname, strecken.Jahr, count(*) as Anzahl FROM zeiten, teilnehmer, strecken WHERE zeiten.TeilnehmerKey = teilnehmer.TeilnehmerKey AND zeiten.StreckenKey = strecken.StreckenKey GROUP BY zeiten.TeilnehmerKey, zeiten.StreckenKey ORDER BY anzahl DESC

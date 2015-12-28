@@ -1,0 +1,37 @@
+/* madeyourweb template for mambo 4.5.3. */
+/* general stuff */
+
+
+body{
+margin:0;
+padding:0;
+text-align: left;
+font-family: verdana, arial, sans-serif;
+}
+
+td,p,div,tr {
+    font-size:   10px;
+    color:       #000000;
+}
+
+tablehead {
+	font-weight: bold;
+	color:		 #FFFFFF;
+}
+
+h1 {
+	font-weight: bold;
+	font-size:   14px;
+	color:		 #6682e4;
+}
+
+h2 {
+	font-weight: bold;
+	font-size:   10px;
+	color:		 #000000;
+}
+
+a  {
+    color: #0040FF;
+    text-decoration: none;
+}
