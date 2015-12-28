@@ -1,27 +1,27 @@
-<?php 
+ï»¿<?php 
 
 echo "<b>Fehlerbehebungsskript wird gestartet</b>.<br><br>";
 
 $date = date("c"); // Aktuelle Zeit in String speichern
 
 
-// ftp_sema löschen falls älter als 30 Minuten
+// ftp_sema lÃ¶schen falls Ã¤lter als 30 Minuten
 if(file_exists("ftp_sema")){
 	$change = 0;
 	$change = time() - filectime("ftp_sema"); 
-	echo "<br>Datei besteht während $change Sekunden.<br>";
-	$error = "<$date> Datei besteht während $change Sekunden.\n";
+	echo "<br>Datei besteht wÃ¤hrend $change Sekunden.<br>";
+	$error = "<$date> Datei besteht wÃ¤hrend $change Sekunden.\n";
 }else{
-	exit("<br>Es gibt nichts aufzuräumen!<br>");
+	exit("<br>Es gibt nichts aufzurÃ¤umen!<br>");
 }
 
 if($change > 1800){
 	unlink(ftp_sema);
-	echo "Datei \"ftp_sema\" wurde gelöscht.<br><br>";
-	$error .= "<$date> Datei \"ftp_sema\" wurde gelöscht.\n";
+	echo "Datei \"ftp_sema\" wurde gelÃ¶scht.<br><br>";
+	$error .= "<$date> Datei \"ftp_sema\" wurde gelÃ¶scht.\n";
 
 	// auf vorhandene Zeiten testen
-	echo "Prüfen auf vorhandene Zeiten:<br>";
+	echo "PrÃ¼fen auf vorhandene Zeiten:<br>";
 	$count = 1;
 	while(file_exists("time".$count.".txt"))
 	{
@@ -32,8 +32,8 @@ if($change > 1800){
 
 	// Anzahl files eintragen
 	file_put_contents("time.dat",$count);
-	echo "<br>\"time.dat\"-Zähler auf $count geschrieben.<br>";
-	$error .= "<$date> \"time.dat\"-Zähler auf $count geschrieben.\n";
+	echo "<br>\"time.dat\"-ZÃ¤hler auf $count geschrieben.<br>";
+	$error .= "<$date> \"time.dat\"-ZÃ¤hler auf $count geschrieben.\n";
 
 
 	// time.php aufrufen
@@ -41,11 +41,11 @@ if($change > 1800){
 	include("time.php");
 	echo "<br><br>******************* ENDE Ausgabe \"time.php\" *******************<br>";
 
-	echo "<br>Zeiten ausgewertet und Dateien gelöscht.";
-	$error .= "<$date> Zeiten ausgewertet und Dateien gelöscht.\n";
+	echo "<br>Zeiten ausgewertet und Dateien gelÃ¶scht.";
+	$error .= "<$date> Zeiten ausgewertet und Dateien gelÃ¶scht.\n";
 
 }else{
-	exit("<br>Die Datei \"ftp_sema\" existiert, ist jedoch noch nicht älter als 30 Minuten.<br>");
+	exit("<br>Die Datei \"ftp_sema\" existiert, ist jedoch noch nicht Ã¤lter als 30 Minuten.<br>");
 }
 
 // schreibe error in log und sende email.
@@ -58,19 +58,19 @@ echo "<br>Email und Log wurden geschrieben.";
 
 
 function send_mail($message, $REMOTE_ADDR) {
-	// Senden eines Emails zur Bestätigung an den frisch registrierten 
+	// Senden eines Emails zur BestÃ¤tigung an den frisch registrierten 
 	// CC an registration@beo-timing.ch zur Info
 	
 	/* Betreff */	
 	$subject = 'Fehler auf BEO-Timing Server gefunden und beseitigt';
 	
-	/* Empfänger */
+	/* EmpfÃ¤nger */
 	$empfaenger = array('Rico Zoss<rico.zoss@gmail.com>');
 	
-	/* Empfänger CC */
+	/* EmpfÃ¤nger CC */
 	$empfaengerCC = array('Sekretariat RRC-Thun<sekretariat@rrc-thun.ch>');
 
-	/* Empfänger BCC */
+	/* EmpfÃ¤nger BCC */
 	$empfaengerBCC = array('');
 
 	/* Absender */

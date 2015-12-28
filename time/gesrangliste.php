@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -61,7 +61,7 @@ function date_mysql2german($date) {
 
 
 
-	$Year=$_GET[year];
+	$Year=$_GET['year'];
 
 	$datum_str="$datum[year]-$datum[mon]-$datum[mday]";
    $sql = "SELECT count(*) as Yearcnt FROM `strecken` WHERE Jahr = $Year AND StreckentypKey=1 AND Enddatum < '$datum_str'";
@@ -84,21 +84,21 @@ function date_mysql2german($date) {
     echo "<h1>Rangliste: \"Gesamtrangliste Rennrad\" ($Year)</h1>";
     echo "<br>" ;
 
-    if($datum[year]==$Year)
-		echo "<p>Voraussetzung für das Erscheinen in dieser Rangliste ist die Teilnahme an den bisher abgeschlossenen $race_per_year Rennen der Kategorie \"Rennrad\" von BEO-Timing im Jahr $Year.</p>";
+    if($datum['year']==$Year)
+		echo "<p>Voraussetzung fÃ¼r das Erscheinen in dieser Rangliste ist die Teilnahme an den bisher abgeschlossenen $race_per_year Rennen der Kategorie \"Rennrad\" von BEO-Timing im Jahr $Year.</p>";
 	else
-	    echo "<p>Voraussetzung für das Erscheinen in dieser Rangliste ist die Teilnahme an allen $race_per_year Rennen der Kategorie \"Rennrad\" von BEO-Timing im Jahr $Year.</p>";
+	    echo "<p>Voraussetzung fÃ¼r das Erscheinen in dieser Rangliste ist die Teilnahme an allen $race_per_year Rennen der Kategorie \"Rennrad\" von BEO-Timing im Jahr $Year.</p>";
     echo "<br>" ;
    //echo "nach dr if ahwisig<br />";
    // Tabellenbeginn
    echo "<table border=\"0\" width=\"660\">";
 
-     // Überschrift
+     // Ãœberschrift
 
    echo "<tr bgcolor=#6682e4> <td><tablehead>Rang</tablehead></td> <td><tablehead>Name</tablehead></td>";
    echo "<td><tablehead>Vorname</tablehead></td> <td><tablehead>Ort</tablehead></td>";
    echo "<td><tablehead>Jahrgang</tablehead></td> <td><tablehead>Team / Club</tablehead></td>";
-   echo "<td><tablehead>Zeit</tablehead></td> <td><tablehead>Rückstand</tablehead></td>";
+   echo "<td><tablehead>Zeit</tablehead></td> <td><tablehead>RÃ¼ckstand</tablehead></td>";
    echo "</tr>";
 
   for ($i=0; $i<$num; $i++) //  for ($i=0; $i<$num; $i++)
@@ -131,7 +131,7 @@ function date_mysql2german($date) {
 			if($rang==0)
 				$winnertime=$gs;
 			//$gu = timeMysql($gs) - timeMysql($winnertime);
-		    $gu = date("H:i:s", timeMysql($gs) - timeMysql($winnertime) - 3600); // (- 1h für Server Zeit)
+		    $gu = date("H:i:s", timeMysql($gs) - timeMysql($winnertime) - 3600); // (- 1h fÃ¼r Server Zeit)
 			if($gu == "00:00:00")
 				$gu = "--";
       	    $rang = $rang + 1;

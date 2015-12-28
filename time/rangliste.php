@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -27,13 +27,13 @@
  * date		    27.12.2010	
  * author		R. Zoss
  * 
- * changelog:	- Hinzufügen einer Spalte zum Anzeigen der Teilnahmezahl (v1.1)
+ * changelog:	- HinzufÃ¼gen einer Spalte zum Anzeigen der Teilnahmezahl (v1.1)
  * 		      - Farbliches Hervorheben der aktuellsten Zeiten	(v1.2)
- *		         - (BUG) Zeitverschiebung des Servers berücksichtigen
- *             - Grösser und kleiner-GLEICH bei Rennauswahl
+ *		         - (BUG) Zeitverschiebung des Servers berÃ¼cksichtigen
+ *             - GrÃ¶sser und kleiner-GLEICH bei Rennauswahl
  *					- Fehler nach Jahreswechsel bei der Auswahl des Rennens gefixt.
- * 				- Logo der Standorte hinzugefügt
- * 				- Logo dynamisch pro Rangliste gemäss Angaben in der Datenbank (Tabelle Logo)
+ * 				- Logo der Standorte hinzugefÃ¼gt
+ * 				- Logo dynamisch pro Rangliste gemÃ¤ss Angaben in der Datenbank (Tabelle Logo)
  * 				- Reihenfolge der Rennen bei Jahresauswahl gefixt
  *
  *******************************************************************************
@@ -66,7 +66,8 @@ function date_mysql2german($date) {
 	$db_check = @ mysql_select_db ( $db_name );  
 	// Aktuelles Datum holen
 	$datum = getdate(time());
-	if($_POST['rennen']!=NULL || !empty($_GET))
+	$highlight = "";
+	if(($_POST!=NULL && $_POST['rennen']!=NULL) || !empty($_GET))
 	{
 		if (!empty($_GET))
 		{
@@ -83,9 +84,9 @@ function date_mysql2german($date) {
 		
 		//$personPost = $_POST['person'];
    	 	//$geschlechtPost = $_POST['geschlecht'];
-		// Personensuche für SQL Query vorbereiten (LIKE)
+		// Personensuche fÃ¼r SQL Query vorbereiten (LIKE)
 		//$personPost="$personPost%";
-		// ausgewählte Kategorie vorbereiten
+		// ausgewÃ¤hlte Kategorie vorbereiten
 		//$kategoriePost=$_POST['kategorie'];
 		
 		// Beide Geschlechter
@@ -99,51 +100,51 @@ function date_mysql2german($date) {
 		
 
 		
-		// Ist der aktuelle StreckenKey für das gewählte Jahr gültig?
-		// Falls nicht, wurde ein anderes Jahr ausgewählt
+		// Ist der aktuelle StreckenKey fÃ¼r das gewÃ¤hlte Jahr gÃ¼ltig?
+		// Falls nicht, wurde ein anderes Jahr ausgewÃ¤hlt
 		$res = mysql_query("SELECT count(*) AS existiert 
 					FROM strecken WHERE jahr = '$jahrPost' AND StreckenKey=$StreckenKey ORDER BY Enddatum ASC");
 		$exists = mysql_result($res, 0, "existiert");		
-		// erstes Rennen wählen, falls nicht das aktuelle Jahr gewählt wurde
+		// erstes Rennen wÃ¤hlen, falls nicht das aktuelle Jahr gewÃ¤hlt wurde
 		if($exists==0 && $jahrPost!=$datum[year]){
 			$res = mysql_query("SELECT StreckenKey " .
 		 					   "FROM strecken WHERE jahr = '$jahrPost' ORDER BY Enddatum ASC");
 			$StreckenKey = mysql_result($res, 0, "StreckenKey");
 		}else if($exists==0){
-			// Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwählen
+			// Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwÃ¤hlen
 		 	$datum_str="$datum[year]-$datum[mon]-$datum[mday]";
 		 	$res = mysql_query("SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum >= '$datum_str' AND " .
 		 					   "Startdatum <= '$datum_str' AND jahr = '$jahrPost' ORDER BY Enddatum ASC");
 		 	if(mysql_num_rows($res)!=0){
-		 		// Name des Rennens speichern, falls eines im Moment läuft
+		 		// Name des Rennens speichern, falls eines im Moment lÃ¤uft
 		 		$rennenPost = mysql_result($res, 0, "Streckenname");
 		 		$StreckenKey = mysql_result($res, 0, "StreckenKey");
 		 	}else{
-		 		// Letztes, abgeschlossenes Rennen wählen, falls keines läuft
+		 		// Letztes, abgeschlossenes Rennen wÃ¤hlen, falls keines lÃ¤uft
 		 		$res = mysql_query("SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum < '$datum_str' ORDER BY Enddatum DESC");
 		 		$rennenPost = mysql_result($res, 0, "Streckenname");
 		 		$StreckenKey = mysql_result($res, 0, "StreckenKey");
 		 	}
 		}else{
-			// nichts tun, da kein neues Jahr gewählt wurde
+			// nichts tun, da kein neues Jahr gewÃ¤hlt wurde
 		}
 		
 		
     }else{
  		 
-		 // Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwählen
+		 // Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwÃ¤hlen
 		 $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
 		 $res = mysql_query("SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND " .
 		 					   "Startdatum < '$datum_str' AND jahr = '$datum[year]' ORDER BY Enddatum ASC");
 		 if(mysql_num_rows($res)!=0){
-		 	// Name des Rennens speichern, falls eines im Moment läuft
+		 	// Name des Rennens speichern, falls eines im Moment lÃ¤uft
 		 	$rennenPost = mysql_result($res, 0, "Streckenname");
 		 	$StreckenKey = mysql_result($res, 0, "StreckenKey");
 		 }else{
-		 	// Letztes, abgeschlossenes Rennen wählen, falls keines läuft
+		 	// Letztes, abgeschlossenes Rennen wÃ¤hlen, falls keines lÃ¤uft
 		 	$res = mysql_query("SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum < '$datum_str' AND Jahr = '$datum[year]' ORDER BY Enddatum DESC");
 			if(mysql_num_rows($res)!=0){
@@ -159,7 +160,7 @@ function date_mysql2german($date) {
 			
 		 }
 		 // Aktuelles Jahr speichern
-		 $jahrPost=$datum[year];
+		 $jahrPost=$datum['year'];
          // Beide Geschlechter
          $geschlechtPost="%";
 		 // Personensuche
@@ -238,7 +239,7 @@ function date_mysql2german($date) {
                                  FROM strecken
                                  GROUP BY strecken.Jahr");
           $num = mysql_num_rows($res);
-		  // ComboBox mit den vorhandenen Jahren auffüllen und das aktuelle Jahr wählen
+		  // ComboBox mit den vorhandenen Jahren auffÃ¼llen und das aktuelle Jahr wÃ¤hlen
           for ($i=0; $i<$num; $i++){
           	$nn = mysql_result($res, $i, "Jahr");
             if($nn==$jahrPost){
@@ -282,7 +283,7 @@ function date_mysql2german($date) {
 
 
    if($rennenPost=="0"){
-   echo "Bitte wählen Sie eine Rennstrecke aus.";
+   echo "Bitte wÃ¤hlen Sie eine Rennstrecke aus.";
    }else{
 
     echo "<h1>Rangliste: \"$streckenname_str\" ($jahrPost)</h1>";
@@ -292,17 +293,17 @@ function date_mysql2german($date) {
    // Tabellenbeginn
    echo "<table border=\"0\" width=\"660\">";
 
-   // Definition der Farben für das Hervorheben der letzten Zeiten
+   // Definition der Farben fÃ¼r das Hervorheben der letzten Zeiten
    $color = array('#FFCC00', '#FFD42A', '#FFDD55', '#FFE680', '#FFEEAA', '#FFF6D5', '#FFFCE5');	// Gelb
 //   $color = array('#D45500','#FF6600', '#FF7F2A', '#FF9955', '#FFB380', '#FFCCAA', '#FFE6D5');	// Orange
 //   $color = array('#0055D4','#0066FF', '#2A7FFF', '#5599FF', '#80B3FF', '#AACCFF', '#D5E5FF');	// Blau
 
-   // Überschrift
+   // Ãœberschrift
 
    echo "<tr bgcolor=#6682e4> <td><tablehead>Rang</tablehead></td> <td><tablehead>Name</tablehead></td>";
    echo "<td><tablehead>Vorname</tablehead></td> <td><tablehead>Ort</tablehead></td>";
    echo "<td><tablehead>Jahrgang</tablehead></td> <td><tablehead>Team / Club</tablehead></td>";
-   echo "<td><tablehead>Zeit</tablehead></td> <td><tablehead>Rückstand</tablehead></td>";
+   echo "<td><tablehead>Zeit</tablehead></td> <td><tablehead>RÃ¼ckstand</tablehead></td>";
    echo "<td><tablehead>Tln.</tablehead></td></tr>";
 
   for ($i=0; $i<$num; $i++)
@@ -325,13 +326,13 @@ function date_mysql2german($date) {
    	  //$res_num = mysql_query($sql);
       //$gz = mysql_result($res_num, 0, "anzahl");	
 	  
-	  // Entscheid für die Farbe der Markierung
+	  // Entscheid fÃ¼r die Farbe der Markierung
 	  
 	  $sql = "SELECT Endzeit FROM zeiten WHERE StreckenKey= $StreckenKey AND TeilnehmerKey= $tk ORDER BY Fahrzeit";
    	  $res_num = mysql_query($sql);
           
 	  $ez = @mysql_result($res_num, 0, "Endzeit"); 
-	  // Berechnen der Differenz, inkl. Berücksichtigung der Zeitverschiebung des Servers von 1h
+	  // Berechnen der Differenz, inkl. BerÃ¼cksichtigung der Zeitverschiebung des Servers von 1h
 	  $ez = (time()+3600-dateMysql($ez))/(3600*24);
 	  
 	//echo "$ez";
@@ -347,13 +348,13 @@ function date_mysql2german($date) {
 	  
 	  if($nn=="(noch")
 	  {
-		  // kein link für (noch nicht ausgewertet)
+		  // kein link fÃ¼r (noch nicht ausgewertet)
 		  echo "<td>$lf</td> <td>$nn</a></td> <td>$vn</a></td>";
 		  echo "<td>$pn</td> <td align=\"center\" >$ge</td> <td>$gt</td> <td align=\"center\" >$gs</td> <td align=\"center\" >$gu</td> <td align=\"center\" >$nz</td></tr>";
 	  }
 	  else if($gu == "00:00:00")
 	  {
-		   // kein Rückstand beim ersten 
+		   // kein RÃ¼ckstand beim ersten 
 		  echo "<td>$lf</td> <td><a href=\"details.php?key=$tk\">$nn</a></td> <td><a href=\"details.php?key=$tk\">$vn</a></td>";
 		  echo "<td>$pn</td> <td align=\"center\" >$ge</td> <td>$gt</td> <td align=\"center\" >$gs</td> <td align=\"center\" >--</td> <td align=\"center\" >$nz</td></tr>";	 
 	  }
@@ -371,7 +372,7 @@ function date_mysql2german($date) {
    echo "</table>";
    
    echo "<br><br><table border=\"0\" width=\"300\">".
-   		"<tr bgcolor=#6682e4> <td><tablehead>Legende - Persönliche Bestzeit gemessen ...</tablehead></td></tr>".
+   		"<tr bgcolor=#6682e4> <td><tablehead>Legende - PersÃ¶nliche Bestzeit gemessen ...</tablehead></td></tr>".
    		"<div class=\"a\"><tr bgcolor=".$color[0]."><td>innerhalb der letzen 24 Stunden</td></tr></div>".
 		"<div class=\"a\"><tr bgcolor=".$color[1]."><td>innerhalb der letzen 2 Tage</td></tr></div>".
 		"<div class=\"a\"><tr bgcolor=".$color[2]."><td>innerhalb der letzen 3 Tage</td></tr></div>".
@@ -379,7 +380,7 @@ function date_mysql2german($date) {
 		"<div class=\"a\"><tr bgcolor=".$color[4]."><td>innerhalb der letzen 5 Tage</td></tr></div>".
 		"<div class=\"a\"><tr bgcolor=".$color[5]."><td>innerhalb der letzen 6 Tage</td></tr></div>".
 		"<div class=\"a\"><tr bgcolor=".$color[6]."><td>innerhalb der letzen 7 Tage</td></tr></div>".
-		"<div class=\"a\"><tr bgcolor=#FFFFFF><td>vor über einer Woche</td></tr></div>".
+		"<div class=\"a\"><tr bgcolor=#FFFFFF><td>vor Ã¼ber einer Woche</td></tr></div>".
 		"</table>";
    
    

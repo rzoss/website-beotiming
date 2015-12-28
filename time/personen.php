@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -56,12 +56,12 @@ function date_mysql2german($date) {
 	$db_check = @ mysql_select_db ( $db_name );  
 	// Aktuelles Datum holen
 	$datum = getdate(time());
-	if($_POST['Nachname']!=NULL || $_POST['Vorname']!=NULL){
+	if($_POST!=NULL && ($_POST['Nachname']!=NULL || $_POST['Vorname']!=NULL)){
    		$namePost = $_POST['Nachname'];
 		$vornamePost = $_POST['Vorname'];
 		
 		$geschlechtPost = $_POST['geschlecht'];
-   	 	// Personensuche für SQL Query vorbereiten (LIKE)
+   	 	// Personensuche fÃ¼r SQL Query vorbereiten (LIKE)
 		$namePost="$namePost%";
 		$vornamePost="$vornamePost%";
 		
@@ -75,7 +75,7 @@ function date_mysql2german($date) {
  		 
 		 
 		 // Aktuelles Jahr speichern
-		 $jahrPost=$datum[year];
+		 $jahrPost=$datum['year'];
          // Beide Geschlechter
          $geschlechtPost="%";
 		 // Personensuche
@@ -114,7 +114,7 @@ function date_mysql2german($date) {
   		 echo "<input name=\"Vorname\" type=\"text\" size=\"15\" maxlength=\"30\" value=\"$string\">";
   		 echo "</td><td>";
   		 
-  		 // RadioButtons für Geschlechterwahl erstellen und den zuletzt gewählte auswählen
+  		 // RadioButtons fÃ¼r Geschlechterwahl erstellen und den zuletzt gewÃ¤hlte auswÃ¤hlen
   		 if($geschlechtPost=="Maennlich"){
   		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"Maennlich\" checked=\"checked\"/>Mann";
   		 }else{
@@ -157,13 +157,13 @@ function date_mysql2german($date) {
    $res = mysql_query($sql);
    $num = mysql_num_rows($res);
 	//echo "$num";
-	if($_POST['Nachname']==NULL && $_POST['Vorname']==NULL)
+	if($_POST!=NULL && ($_POST['Nachname']==NULL && $_POST['Vorname']==NULL))
    {
 		echo "<div class=\"a\"><p>Daten eingeben, um die Suche zu starten.</p></div>";
    }
    else if($num > 50)
    {
-		echo "<div class=\"a\"><p>Mehr als 50 Treffer. Bitte die Suche weiter einschränken.</p></div>";
+		echo "<div class=\"a\"><p>Mehr als 50 Treffer. Bitte die Suche weiter einschrÃ¤nken.</p></div>";
    }
    else if($num == 0)
    {
@@ -172,7 +172,7 @@ function date_mysql2german($date) {
    else
    {
 		echo "<div class=\"a\"><p>$num Teilnehmer gefunden.</p></div><br>";
-	   // Überschrift
+	   // Ãœberschrift
 		echo "<table border=\"0\" width=\"660\">";
 	   echo "<tr bgcolor=#6682e4> <td><tablehead>Name</tablehead></td>";
 	   echo "<td><tablehead>Vorname</tablehead></td> <td><tablehead>Ort</tablehead></td>";
@@ -196,7 +196,7 @@ function date_mysql2german($date) {
 		  //$res_num = mysql_query($sql);
 		  //$gz = mysql_result($res_num, 0, "anzahl");	
 		  
-		  // Entscheid für die Farbe der Markierung
+		  // Entscheid fÃ¼r die Farbe der Markierung
 		  
 		  echo "<div class=\"a\">";
 		  echo "<tr>";

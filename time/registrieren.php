@@ -1,8 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-       <title>Auswertung der übermittelten Formulardaten zur Registrieurng einer pers&ouml;nlichen Karte</title>
+       <title>Auswertung der Ã¼bermittelten Formulardaten zur Registrieurng einer pers&ouml;nlichen Karte</title>
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
  *******************************************************************************
  * file    regitrieren.php
  *******************************************************************************
- * brief    Skript zum Auswerten der eingegebenen Formulardaten zur Registrierung einer persönlichen Karte
+ * brief    Skript zum Auswerten der eingegebenen Formulardaten zur Registrierung einer persÃ¶nlichen Karte
  * 
  * version		1.0
  * date		11.06.2008
@@ -21,7 +21,7 @@
  *******************************************************************************
  */
  
-// Funktion zum Verbinden der gewünschten Datenbank
+// Funktion zum Verbinden der gewÃ¼nschten Datenbank
 function database_connect($dbname) {
 	/* Datenbankserver - In der Regel die IP */
 	$db_server = 'ricozo6.mysql.db.internal';
@@ -55,12 +55,12 @@ function database_connect($dbname) {
 
 database_connect("joomla");
 
-// Prüfen ob neue Einträge vorhanden sind
+// PrÃ¼fen ob neue EintrÃ¤ge vorhanden sind
 $sql = "SELECT id, submitted FROM jos_facileforms_records WHERE form =24 AND exported =0 AND viewed=0";
 $res_newentries = mysql_query($sql);
 $num_newentries = mysql_affected_rows();
 
-// Neue Einträge abarbeiten
+// Neue EintrÃ¤ge abarbeiten
 for($i=0;$i<$num_newentries;++$i){
 	$record_num = mysql_result($res_newentries,$i,"id");
 	$submitted = mysql_result($res_newentries,$i,"submitted");
@@ -90,13 +90,13 @@ for($i=0;$i<$num_newentries;++$i){
 	// Eintragen der Daten in die Time-Datenbank
 	mysql_close();
 	database_connect("time");
-	// Prüfen ob der Teilnehmer schon vorhanden ist
+	// PrÃ¼fen ob der Teilnehmer schon vorhanden ist
 	if(strstr($adr," ")){
 		// Adresse mit Hausnummer
-		$adresse = substr($adr, 0, strpos($adr," ")).'%'; // Strasse extrahieren und '%' anhängen
+		$adresse = substr($adr, 0, strpos($adr," ")).'%'; // Strasse extrahieren und '%' anhÃ¤ngen
 	}else{
 		// Adresse ohne Hausnummer
-		$adresse = $adr.'%'; // Nur '%' anhängen
+		$adresse = $adr.'%'; // Nur '%' anhÃ¤ngen
 	}
 	echo $adresse;
 	
@@ -106,8 +106,8 @@ for($i=0;$i<$num_newentries;++$i){
 	$res = mysql_query($sql);
 	$num = mysql_affected_rows();
 	if($num == 1 && is_null(mysql_result($res,0,"SNR_RFID"))){
-		// Übereinstimmung gefunden und noch keine Karte registriert
-		echo "Übereinstimmung";
+		// Ãœbereinstimmung gefunden und noch keine Karte registriert
+		echo "Ãœbereinstimmung";
 		$TeilnehmerKey = mysql_result($res,0,"TeilnehmerKey");
 		$sql = "UPDATE teilnehmer SET SNR_RFID = '$snr' WHERE TeilnehmerKey =$TeilnehmerKey";
 		mysql_query("LOCK TABLES teilnehmer WRITE");
@@ -152,8 +152,8 @@ for($i=0;$i<$num_newentries;++$i){
 		mysql_query("UNLOCK TABLES");
 		
 	}else{
-		// Keine sichere Übereinstimmung --> manuelle Eintragung
-		echo "keine Übereinstimmung";
+		// Keine sichere Ãœbereinstimmung --> manuelle Eintragung
+		echo "keine Ãœbereinstimmung";
 		/* Nachricht */
 		$message = "<html>
 			<head>
@@ -165,10 +165,10 @@ for($i=0;$i<$num_newentries;++$i){
 				Die Karte mit der Seriennummer \"$snr\" konnte nicht automatisch auf den Namen $nan $von registriert werden. <br>
 					Dies kann die folgenden Gr&uuml;nde haben: <br><ol>
 					<li>Deine Daten sind im System noch nicht Registriert, d.h Du hast noch an keinem Rennen teilgenommen. 
-					Somit ist aus Sicherheitsgründen keine automatische Eintragung m&ouml;glich. 
+					Somit ist aus SicherheitsgrÃ¼nden keine automatische Eintragung m&ouml;glich. 
 					Der Administrator wird sich bei Dir per Email melden. </li>
-					<li>Du hast beim Ausfüllen des Formulars nicht dieselben Angaben gemacht, 
-					wie im System hinterlegt sind. (Tippfehler, Adressänderung, usw.) Auch in diesem Fall 
+					<li>Du hast beim AusfÃ¼llen des Formulars nicht dieselben Angaben gemacht, 
+					wie im System hinterlegt sind. (Tippfehler, AdressÃ¤nderung, usw.) Auch in diesem Fall 
 					wird der Administrator mit dir per Email in Kontakt treten. </li>
 					<li>Auf deinen Namen ist bereits eine Karte registriert. In diesem Fall bitten wir dich 
 					mit dem Administrator in Kontakt zu treten, um das Problem aufzul&ouml;sen.</li>
@@ -188,7 +188,7 @@ for($i=0;$i<$num_newentries;++$i){
 				<a href=\"http://www.rrc-thun.ch\">Radrennclub Thun</a><br>
 				<a href=\"http://www.rc-steffisburg.ch\">Racingclub Steffisburg</a><br>
 				<br>
-				<br>------Informationen für den Admin------<br>
+				<br>------Informationen fÃ¼r den Admin------<br>
 				Record-Nr: $record_num<br>
 				Timestamp: $submitted<br>		
 				Daten: $nan $von, $plz $ort<br>
@@ -209,23 +209,23 @@ for($i=0;$i<$num_newentries;++$i){
 } // end for(...)	
 	
 function send_mail($typ, $message, $von, $nan, $ema, $REMOTE_ADDR) {
-	// Senden eines Emails zur Bestätigung an den frisch registrierten 
+	// Senden eines Emails zur BestÃ¤tigung an den frisch registrierten 
 	// CC an registration@beo-timing.ch zur Info
 	
 	/* Betreff */	
 	if($typ=='success'){
-	    $subject = 'Erfolgreiche Registration einer persönlichen Karte bei BEO-Timing';
+	    $subject = 'Erfolgreiche Registration einer persÃ¶nlichen Karte bei BEO-Timing';
 	}else{
-		$subject = 'Fehlgeschlagen: Registration einer persönlichen Karte bei BEO-Timing';
+		$subject = 'Fehlgeschlagen: Registration einer persÃ¶nlichen Karte bei BEO-Timing';
 	}
 	
-	/* Empfänger */
+	/* EmpfÃ¤nger */
 	$empfaenger = array($von.' '.$nan.'<'.$ema.'>');
 	
-	/* Empfänger CC */
+	/* EmpfÃ¤nger CC */
 	$empfaengerCC = array('');
 
-	/* Empfänger BCC */
+	/* EmpfÃ¤nger BCC */
 	if($typ=='success'){
 		$empfaengerBCC = array('Registration - BEO-Timing<registration@beo-timing.ch>');
 	}else{

@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -23,7 +23,7 @@
  *
  * changelog:	- Anzeigen des Jahr bei der Strecke (v1.2)
  * 				- Fehler bei mehreren Strecken gleichzeitig
- * 				- Zusätzliche Statistik hinzugefügt
+ * 				- ZusÃ¤tzliche Statistik hinzugefÃ¼gt
  * 				 		      
  *******************************************************************************
  */
@@ -47,10 +47,10 @@ $db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
    or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
 $db_check = @ mysql_select_db ( $db_name );
 
-// TeilnehmerKey aus der URL-übergabe speichern
+// TeilnehmerKey aus der URL-Ã¼bergabe speichern
 $TeilnehmerKey=$_GET[key];
 
-// Persönliche Daten des ausgewählten Teilnehmers  aus Datenbank laden
+// PersÃ¶nliche Daten des ausgewÃ¤hlten Teilnehmers  aus Datenbank laden
 $sql = "SELECT name, vorname, Club, PLZ, Ort, Nationalitaet FROM teilnehmer WHERE TeilnehmerKey=$TeilnehmerKey";
 $res = mysql_query($sql);
 

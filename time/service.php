@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 // Dieses Skript muss stündlich aufgerufen werden!
 
