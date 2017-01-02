@@ -79,6 +79,7 @@ function date_mysql2german($date) {
 		{
 			$rennenPost = $_POST['rennen'];
 			$jahrPost = $_POST['jahr'];
+			
 		}
 		
 		
@@ -135,10 +136,22 @@ function date_mysql2german($date) {
     }else{
  		 
 		 // Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwählen
-		 $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
+		 // Prüfen ob Rennen im aktuellen Jahr vorhanden sind. Verwende 31-12-<letztes Jahr> andernfalls. 
+		 $res = mysql_query("SELECT count(*) AS existiert 
+					FROM strecken WHERE jahr = '$datum[year]'");
+		 $exists = mysql_result($res, 0, "existiert");	
+		 if($exists==0){
+			 $res = mysql_query("SELECT MAX(jahr) AS jahr FROM strecken");
+			 $datum_jahr = mysql_result($res, 0, "jahr");
+			 $datum_str="$datum_jahr-12-31";
+		 }else{
+			 $datum_jahr="$datum[year]";
+			 $datum_str="$datum_jahr-$datum[mon]-$datum[mday]";
+		 }
+		 
 		 $res = mysql_query("SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND " .
-		 					   "Startdatum < '$datum_str' AND jahr = '$datum[year]' ORDER BY Enddatum ASC");
+		 					   "Startdatum < '$datum_str' AND jahr = '$datum_jahr' ORDER BY Enddatum ASC");
 		 if(mysql_num_rows($res)!=0){
 		 	// Name des Rennens speichern, falls eines im Moment läuft
 		 	$rennenPost = mysql_result($res, 0, "Streckenname");
@@ -146,13 +159,13 @@ function date_mysql2german($date) {
 		 }else{
 		 	// Letztes, abgeschlossenes Rennen wählen, falls keines läuft
 		 	$res = mysql_query("SELECT Streckenname, StreckenKey " .
-		 					   "FROM strecken WHERE Enddatum < '$datum_str' AND Jahr = '$datum[year]' ORDER BY Enddatum DESC");
+		 					   "FROM strecken WHERE Enddatum < '$datum_str' AND Jahr = '$datum_jahr' ORDER BY Enddatum DESC");
 			if(mysql_num_rows($res)!=0){
 				$rennenPost = mysql_result($res, 0, "Streckenname");
 				$StreckenKey = mysql_result($res, 0, "StreckenKey");
 			}else{
 				$res = mysql_query("SELECT Streckenname, StreckenKey " .
-		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND Jahr = '$datum[year]' ORDER BY Enddatum ASC");
+		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND Jahr = '$datum_jahr' ORDER BY Enddatum ASC");
 
 				$rennenPost = mysql_result($res, 0, "Streckenname");
 				$StreckenKey = mysql_result($res, 0, "StreckenKey");
@@ -160,7 +173,7 @@ function date_mysql2german($date) {
 			
 		 }
 		 // Aktuelles Jahr speichern
-		 $jahrPost=$datum['year'];
+		 $jahrPost=$datum_jahr;
          // Beide Geschlechter
          $geschlechtPost="%";
 		 // Personensuche
