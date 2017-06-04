@@ -17,17 +17,28 @@
  *******************************************************************************
  * brief    Anzeigen der Details eines Teilnehmers
  * 
- * version		1.3
- * date			8.09.2010
+ * version		2.0.0
+ * date			04.06.2017
  * author		R. Zoss
  *
- * changelog:	- Anzeigen des Jahr bei der Strecke (v1.2)
- * 				- Fehler bei mehreren Strecken gleichzeitig
- * 				- Zusätzliche Statistik hinzugefügt
+ * changelog:	- Aktualisierungen für PHP 7.x
  * 				 		      
  *******************************************************************************
  */
 
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
+}
+ 
+ 
 // Verbindung mit der Datenbank herstellen
 
 	/* Datenbankserver - In der Regel die IP */
@@ -43,23 +54,23 @@
 	$db_passwort = 'KGloQyRd';
          
 /* Erstellt Connect zu Datenbank her */
-$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-$db_check = @ mysql_select_db ( $db_name );
+
 
 // TeilnehmerKey aus der URL-übergabe speichern
 $TeilnehmerKey=$_GET[key];
 
 // Persönliche Daten des ausgewählten Teilnehmers  aus Datenbank laden
 $sql = "SELECT name, vorname, Club, PLZ, Ort, Nationalitaet FROM teilnehmer WHERE TeilnehmerKey=$TeilnehmerKey";
-$res = mysql_query($sql);
+$res = mysqli_query($db, $sql);
 
-$nn = mysql_result($res, 0, "name");
-$vn = mysql_result($res, 0, "vorname");
-$cl = mysql_result($res, 0, "Club");
-$pl = mysql_result($res, 0, "PLZ");
-$or = mysql_result($res, 0, "Ort");
-$na = mysql_result($res, 0, "Nationalitaet");
+$nn = mysqli_result($res, 0, "name");
+$vn = mysqli_result($res, 0, "vorname");
+$cl = mysqli_result($res, 0, "Club");
+$pl = mysqli_result($res, 0, "PLZ");
+$or = mysqli_result($res, 0, "Ort");
+$na = mysqli_result($res, 0, "Nationalitaet");
 
 echo "<p><b>$vn $nn</b><br>$cl<br>$or, $na</p><br>";
 
@@ -75,27 +86,27 @@ $sql = "SELECT zeiten.StreckenKey AS StreckenKey, Streckenname, Typ, Jahr, start
 		AND strecken.StreckentypKey=streckentyp.StreckentypKey 
 		AND zeiten.TeilnehmerKey=$TeilnehmerKey ORDER BY zeiten.StreckenKey DESC, fahrzeit ASC";
 //echo $sql;
-$res = mysql_query($sql);
-echo mysql_error();
-$num = mysql_num_rows($res);
+$res = mysqli_query($db, $sql);
+echo mysqli_error($db);
+$num = mysqli_num_rows($res);
 
 $i=0;
 while($i<$num){
 	echo "<tr><td>";
-	$StreckenKey=mysql_result($res, $i, "StreckenKey");
+	$StreckenKey=mysqli_result($res, $i, "StreckenKey");
 	$sql = "SELECT count(*) AS count FROM zeiten
 			WHERE TeilnehmerKey=$TeilnehmerKey AND StreckenKey=$StreckenKey";
 	//echo $sql;
-	$res2 = mysql_query($sql);
-	$count = mysql_result($res2, 0, "count");
-	$str = mysql_result($res, $i, "Streckenname");
-	$typ = mysql_result($res, $i, "Typ");
-	$year = mysql_result($res, $i, "Jahr");
+	$res2 = mysqli_query($db, $sql);
+	$count = mysqli_result($res2, 0, "count");
+	$str = mysqli_result($res, $i, "Streckenname");
+	$typ = mysqli_result($res, $i, "Typ");
+	$year = mysqli_result($res, $i, "Jahr");
 	
 	echo "<h2><a href=\"rangliste.php?rennen=$StreckenKey&jahr=$year&teilnehmer=$TeilnehmerKey\">$str ($typ, $year)</a></h2></td><td>";
 	$old_i=$i;
 	for($i;$i<$count+$old_i;++$i){
-		$datum = mysql_result($res, $i, "startzeit");
+		$datum = mysqli_result($res, $i, "startzeit");
 		echo dateMysql('d.m.Y', $datum);
 		if($i!=$count+$old_i-1){ // Zeilenumbruch, ausser bei der letzten Zeile
 			echo "<br>";
@@ -104,7 +115,7 @@ while($i<$num){
 	echo "</td><td>";
 	$i=$old_i;
 	for($i;$i<$count+$old_i;++$i){
-		$time = mysql_result($res, $i, "fahrzeit");
+		$time = mysqli_result($res, $i, "fahrzeit");
 		echo $time;
 		if($i!=$count+$old_i-1){ // Zeilenumbruch, ausser bei der letzten Zeile
 			echo "<br>";
@@ -122,30 +133,30 @@ echo "</table>";
 <?php
 
 $sql="SELECT jahr FROM zeiten,strecken WHERE zeiten.StreckenKey = strecken.StreckenKey AND TeilnehmerKey=$TeilnehmerKey GROUP BY jahr ORDER BY jahr DESC";
-$res = mysql_query($sql);
-echo mysql_error();
-$num = mysql_num_rows($res);
+$res = mysqli_query($db, $sql);
+echo mysqli_error($db);
+$num = mysqli_num_rows($res);
 $i=0;
 while($i<$num){
 	echo "<tr><td>";
-	$jahr_stat=mysql_result($res, $i, "jahr");
+	$jahr_stat=mysqli_result($res, $i, "jahr");
 	echo "$jahr_stat</td><td>";
 	
 	$sql="SELECT COUNT(tmp) as sum FROM (SELECT count(*) as tmp FROM zeiten,strecken WHERE strecken.StreckenKey=zeiten.StreckenKey AND TeilnehmerKey = $TeilnehmerKey AND jahr=$jahr_stat GROUP BY zeiten.StreckenKey) as cnt";
-	$res_stat1 = mysql_query($sql);
-	$nr_tn = mysql_result($res_stat1, 0, "sum");
+	$res_stat1 = mysqli_query($db, $sql);
+	$nr_tn = mysqli_result($res_stat1, 0, "sum");
 	
 	$sql="SELECT COUNT(*) as cnt FROM strecken WHERE jahr=$jahr_stat";
-	$res_stat1 = mysql_query($sql);
-	$nr_total = mysql_result($res_stat1, 0, "cnt");
+	$res_stat1 = mysqli_query($db, $sql);
+	$nr_total = mysqli_result($res_stat1, 0, "cnt");
 	//echo $sql;
 	echo "$nr_tn / $nr_total";
 	
 	echo "</td><td>";
 	
 	$sql="SELECT count(*) as cnt FROM zeiten,strecken WHERE strecken.StreckenKey=zeiten.StreckenKey AND TeilnehmerKey = $TeilnehmerKey AND jahr=$jahr_stat";
-	$res_stat2 = mysql_query($sql);
-	$nr = mysql_result($res_stat2, 0, "cnt");
+	$res_stat2 = mysqli_query($db, $sql);
+	$nr = mysqli_result($res_stat2, 0, "cnt");
 	//echo $sql;
 	echo "$nr";
 	
@@ -157,18 +168,18 @@ while($i<$num){
 echo "<tr><td><b>Total</b></td><td>";
 
 $sql="SELECT COUNT(tmp) as sum FROM (SELECT count(*) as tmp FROM zeiten,strecken WHERE strecken.StreckenKey=zeiten.StreckenKey AND TeilnehmerKey = $TeilnehmerKey GROUP BY zeiten.StreckenKey) as cnt";
-$res_stat1 = mysql_query($sql);
-$nr_tn = mysql_result($res_stat1, 0, "sum");
+$res_stat1 = mysqli_query($db, $sql);
+$nr_tn = mysqli_result($res_stat1, 0, "sum");
 
 $sql="SELECT COUNT(*) as cnt FROM strecken";
-$res_stat1 = mysql_query($sql);
-$nr_total = mysql_result($res_stat1, 0, "cnt");
+$res_stat1 = mysqli_query($db, $sql);
+$nr_total = mysqli_result($res_stat1, 0, "cnt");
 //echo $sql;
 echo "<b>$nr_tn / $nr_total</b>";
 echo "</td><td>";
 $sql="SELECT count(*) as cnt FROM zeiten,strecken WHERE strecken.StreckenKey=zeiten.StreckenKey AND TeilnehmerKey = $TeilnehmerKey";
-$res_stat2 = mysql_query($sql);
-$nr = mysql_result($res_stat2, 0, "cnt");
+$res_stat2 = mysqli_query($db, $sql);
+$nr = mysqli_result($res_stat2, 0, "cnt");
 //echo $sql;
 echo "<b>$nr</b>";
 echo "</td></tr>";

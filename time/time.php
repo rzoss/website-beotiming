@@ -1,8 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ï»¿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-       <title>Auswertung der übermittelten Daten im Verzeichnis</title>
+       <title>Auswertung der Ã¼bermittelten Daten im Verzeichnis</title>
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
@@ -13,15 +13,28 @@
  *******************************************************************************
  * file    time.php
  *******************************************************************************
- * brief    Skript zum Auswerten der über GPRS übermittelten Fahrzeiten der mobilen Stationen
+ * brief    Skript zum Auswerten der Ã¼ber GPRS Ã¼bermittelten Fahrzeiten der mobilen Stationen
  * 
- * version		1.3
- * date			23.03.2014
+ * version		2.0.0
+ * date			04.06.2017
  * author		R. Zoss
  *
  *******************************************************************************
  */
 
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
+}
+ 
+ 
 // Begin PHP
 	/* Datenbankserver - In der Regel die IP */
 	$db_server = 'ricozo6.mysql.db.internal';
@@ -36,9 +49,8 @@
 	$db_passwort = 'KGloQyRd';
          
 	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+	$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    		or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-	$db_check = @ mysql_select_db ( $db_name ); 
 	
 		// Aktuelles Datum holen
 	$datum = getdate(time());
@@ -61,13 +73,13 @@ function validateMysqlDate( $date )
     return preg_match('/\\A(?:^((\\d{2}(([02468][048])|([13579][26]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])))))|(\\d{2}(([02468][1235679])|([13579][01345789]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|(1[0-9])|(2[0-8]))))))(\\s(((0?[0-9])|(1[0-9])|(2[0-3]))\\:([0-5][0-9])((\\s)|(\\:([0-5][0-9])))?))?$)\\z/', $date);
 }
 
-// Prüfen ob die Daten durch eine "Semaphore" geschützt sind!
+// PrÃ¼fen ob die Daten durch eine "Semaphore" geschÃ¼tzt sind!
 if(!file_exists("ftp_sema")){
-	// Prüfen ob die Datei "time.dat" auf dem Server '0' enthält.
+	// PrÃ¼fen ob die Datei "time.dat" auf dem Server '0' enthÃ¤lt.
 	// In diesem Fall sind keine Zeiten zu interpretieren.
 	if(file_exists("$fileprefix.dat")){
 		echo "\nDatei $fileprefix.dat existiert\n";
-		$datei = fopen("$fileprefix.dat","r");                   // Datei öffnen
+		$datei = fopen("$fileprefix.dat","r");                   // Datei Ã¶ffnen
 		$zeile = fgets($datei,10);                    // Zeile lesen (max. 1000 Zeichen)
 		fclose($datei);                               // Datei schliessen
 		echo $zeile;                                  // Daten ausgeben
@@ -76,15 +88,15 @@ if(!file_exists("ftp_sema")){
 		echo "\nDatei $fileprefix.dat existiert nicht\n";
 		$count=0;
 	}
-	// Ausführen wenn und dann so lange wie Dateien vorhanden sind
+	// AusfÃ¼hren wenn und dann so lange wie Dateien vorhanden sind
 	for($filenumber=1;$filenumber<=$count;$filenumber++){
 		echo "\nentering for-loop\n";
 		$filename = "$fileprefix$filenumber$fileext";   // Zusammensetzen des Dateinamens
-		echo "$filename <br>";                          // Prüfen ob die Datei vorhanden ist
+		echo "$filename <br>";                          // PrÃ¼fen ob die Datei vorhanden ist
 		$exists = file_exists($filename);
 		if($exists){
 		echo "\nDatei $filename existiert\n";
-		$datei = fopen($filename,"r");                // Datei öffnen
+		$datei = fopen($filename,"r");                // Datei Ã¶ffnen
 		$zeile = fgets($datei,1000);                  // Zeile lesen (max. 1000 Zeichen)
 		fclose($datei);                               // Datei schliessen
 		echo $zeile;                                  // Daten ausgeben
@@ -100,8 +112,8 @@ if(!file_exists("ftp_sema")){
 		$sql = "SELECT `TeilnehmerKey`
 				FROM `teilnehmer`
 				WHERE `SNR_RFID` = \"$rfid_snr\" AND `name`!='(noch'";
-		$res = mysql_query($sql);
-		$num = mysql_affected_rows();
+		$res = mysqli_query($db, $sql);
+		$num = mysqli_affected_rows();
 		echo "Resultat feste Abfrage: $num";
 		
 		// plausibility check:
@@ -118,7 +130,7 @@ echo "<br>Debug2 $magic<br>";
 				if($num>0){
 					echo "Nummer vergeben: ";
 					// Teilnehmernummer setzen falls vergeben
-					$teilnehmer = mysql_result($res,0,"TeilnehmerKey");
+					$teilnehmer = mysqli_result($res,0,"TeilnehmerKey");
 				}else{
 					echo "Nummer frei: ";
 					// "(noch nicht ausgewertet)" - User erstellen
@@ -143,16 +155,16 @@ echo "<br>Debug2 $magic<br>";
 							NULL , NULL , NULL , NULL , '$rfid_snr'
 						)";
 					//echo $sql;
-					mysql_query("LOCK TABLES teilnehmer WRITE");
-					mysql_query($sql);
-					mysql_query("UNLOCK TABLES");
-					// TeilnehmerKey des soeben erstellten Users abfragen (Identifikation über RFID-Snr)
+					mysqli_query($db, "LOCK TABLES teilnehmer WRITE");
+					mysqli_query($db, $sql);
+					mysqli_query($db, "UNLOCK TABLES");
+					// TeilnehmerKey des soeben erstellten Users abfragen (Identifikation Ã¼ber RFID-Snr)
 					// max(..) damit sicher der soeben erstellte User gelesen wird
 					$sql = "SELECT TeilnehmerKey 	
 						FROM `teilnehmer`
 						WHERE `SNR_RFID` = '$rfid_snr' AND `name`='(noch'";
-					$res = mysql_query($sql);
-					$teilnehmer = mysql_result($res,0);
+					$res = mysqli_query($db, $sql);
+					$teilnehmer = mysqli_result($res,0);
 					echo $teilnehmer;
 				} // end if($num>0)...else 
 				
@@ -175,55 +187,55 @@ echo "<br>Debug2 $magic<br>";
 						'$endtime', '$strecke', '$teilnehmer', 
 						' ', '$racetime', '$rfid_snr')";
 				// SQL-Befehl ausgeben
-				mysql_query("LOCK TABLES zeiten WRITE");
-				mysql_query($sql);  // Eintrag der neuen Zeit in die Datenbank
-				mysql_query("UNLOCK TABLES");
+				mysqli_query($db, "LOCK TABLES zeiten WRITE");
+				mysqli_query($db, $sql);  // Eintrag der neuen Zeit in die Datenbank
+				mysqli_query($db, "UNLOCK TABLES");
 				echo "<$date$> $zeile<br>";
 				// Zeile in Log schreiben
 				file_put_contents("time$curYear.log","<$date$> $zeile\n", FILE_APPEND);
-				unlink($filename);              // Löschen der ausgewerteten Date
+				unlink($filename);              // LÃ¶schen der ausgewerteten Date
 				break;
 			case "TIMD":
 				echo "\nEnter case TIMD\n";
 				if($num==0){
-					// "(noch nicht ausgewertet)" - User in DB löschen
+					// "(noch nicht ausgewertet)" - User in DB lÃ¶schen
 					$sql = "SELECT `TeilnehmerKey` FROM `$db_name`.`zeiten` WHERE `Startzeit`='$starttime' AND `StreckenKey`='$strecke'";
-					$res = mysql_query($sql);
-					$teilnehmer = mysql_result($res,0,"TeilnehmerKey");
+					$res = mysqli_query($db, $sql);
+					$teilnehmer = mysqli_result($res,0,"TeilnehmerKey");
 					$sql = "DELETE FROM `teilnehmer` WHERE `TeilnehmerKey`=$teilnehmer";
 					echo "<br>$sql<br>";
-					mysql_query("LOCK TABLES teilnehmer WRITE");
-					mysql_query($sql);
-					mysql_query("UNLOCK TABLES");
+					mysqli_query($db, "LOCK TABLES teilnehmer WRITE");
+					mysqli_query($db, $sql);
+					mysqli_query($db, "UNLOCK TABLES");
 				}// end if($num!=0)
 				
-				// Zeit löschen	
+				// Zeit lÃ¶schen	
 				$sql = "DELETE FROM `zeiten` WHERE `Startzeit`='$starttime' AND `StreckenKey`='$strecke'";
 				echo "<br>$sql<br>";
-				mysql_query("LOCK TABLES teilnehmer WRITE");
-				mysql_query($sql); // Eintrag der neuen Zeit in die Datenbank
-				mysql_query("UNLOCK TABLES");
+				mysqli_query($db, "LOCK TABLES teilnehmer WRITE");
+				mysqli_query($db, $sql); // Eintrag der neuen Zeit in die Datenbank
+				mysqli_query($db, "UNLOCK TABLES");
 				echo "<$date$> $zeile<br>";
 				// Zeile in Log schreiben
 				file_put_contents("time$curYear.log","<$date$> $zeile\n", FILE_APPEND);
-				unlink($filename);              // Löschen der ausgewerteten Datei
+				unlink($filename);              // LÃ¶schen der ausgewerteten Datei
 				break;
 			case "IGNO":
 				echo "<$date$> Invalid date (this will be ignored): $zeile<br>";
 				file_put_contents("time$curYear.log","<$date$> Invalid date (this will be ignored): $zeile\n", FILE_APPEND);
-				unlink($filename);              // Löschen der ausgewerteten Datei
+				unlink($filename);              // LÃ¶schen der ausgewerteten Datei
 				break;
 			} // end switch(...) case:
 		} // end if($exists)
 	} // end for
-echo "<br>Debug3<br>";		
+	
 	// Erstellen der Datei "time.dat" mit Inhalt '0', als Zeichen, dass keine Daten vorhanden sind
-	// (Muss beim Eintragen neuer Daten über FTP durch das Telit-Modul neu gesetzt werden)
+	// (Muss beim Eintragen neuer Daten Ã¼ber FTP durch das Telit-Modul neu gesetzt werden)
 	$handle = fopen("$fileprefix.dat", "w");
 	fwrite($handle, '0');
 	fclose($handle);
 
-	mysql_close($db);  // Logout der Datenbank
+	mysqli_close($db);  // Logout der Datenbank
 } // End semaphore
 	
 // Ende PHP

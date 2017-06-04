@@ -16,15 +16,15 @@
 
 /**
  *******************************************************************************
- * file    rangliste.php
+ * file    personen.php
  *******************************************************************************
- * brief    Darstellung der Rangliste aller Rennen inkl. verschiedener Filterfunktionen
+ * brief    
  * 
- * version		
- * date		    
+ * version		2.0.0
+ * date		    04.06.2017	
  * author		R. Zoss
  * 
- * changelog:	
+ * changelog:	- Aktualisierungen für PHP 7.x
  *
  *******************************************************************************
  */
@@ -35,6 +35,17 @@ function date_mysql2german($date) {
     return    sprintf("%02d.%02d.%04d", $d[2], $d[1], $d[0]);
 }
  
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
+}
  
 	// Verbindung mit der Datenbank herstellen
 
@@ -51,16 +62,15 @@ function date_mysql2german($date) {
 	$db_passwort = 'KGloQyRd';
          
 	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+	$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    		or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-	$db_check = @ mysql_select_db ( $db_name );  
 	// Aktuelles Datum holen
 	$datum = getdate(time());
 	if($_POST!=NULL && ($_POST['Nachname']!=NULL || $_POST['Vorname']!=NULL)){
    		$namePost = $_POST['Nachname'];
 		$vornamePost = $_POST['Vorname'];
 		
-		$geschlechtPost = $_POST['geschlecht'];
+		$geschlechtPost = $_POST['Geschlecht'];
    	 	// Personensuche für SQL Query vorbereiten (LIKE)
 		$namePost="$namePost%";
 		$vornamePost="$vornamePost%";
@@ -116,19 +126,19 @@ function date_mysql2german($date) {
   		 
   		 // RadioButtons für Geschlechterwahl erstellen und den zuletzt gewählte auswählen
   		 if($geschlechtPost=="Maennlich"){
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"Maennlich\" checked=\"checked\"/>Mann";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"Maennlich\" checked=\"checked\"/>Mann";
   		 }else{
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"Maennlich\"/>Mann";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"Maennlich\"/>Mann";
   		 }
   		 if($geschlechtPost=="Weiblich"){
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"Weiblich\" checked=\"checked\"/>Frau";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"Weiblich\" checked=\"checked\"/>Frau";
   		 }else{
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"Weiblich\"/>Frau";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"Weiblich\"/>Frau";
   		 }
   		 if($geschlechtPost=="%"){
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"%\" checked=\"checked\"/>Beide";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"%\" checked=\"checked\"/>Beide";
   		 }else{
-  		 	echo "<input type=\"radio\" name=\"geschlecht\" value=\"%\"/>Beide";
+  		 	echo "<input type=\"radio\" name=\"Geschlecht\" value=\"%\"/>Beide";
   		 }  		 
         
           
@@ -142,8 +152,8 @@ function date_mysql2german($date) {
 
 
 <?php
-   $sql = "SELECT teilnehmer.TeilnehmerKey, teilnehmer.name, teilnehmer.vorname, teilnehmer.ort, 
-    	 teilnehmer.jahrgang,teilnehmer.club
+   $sql = "SELECT teilnehmer.TeilnehmerKey, teilnehmer.Name, teilnehmer.Vorname, teilnehmer.Ort, 
+    	 teilnehmer.Jahrgang,teilnehmer.Club
     	 FROM strecken, zeiten, teilnehmer 
     	 WHERE zeiten.StreckenKey = strecken.StreckenKey 
    	 	 AND zeiten.TeilnehmerKey = teilnehmer.TeilnehmerKey 
@@ -152,10 +162,10 @@ function date_mysql2german($date) {
    		 AND zeiten.kategorie LIKE '$kategoriePost' 
 		 AND NOT teilnehmer.Name='(noch' 
    	 	 GROUP BY teilnehmer.TeilnehmerKey
-    	 ORDER BY teilnehmer.name ASC, teilnehmer.vorname ASC, teilnehmer.jahrgang DESC"; 
+    	 ORDER BY teilnehmer.Name ASC, teilnehmer.Vorname ASC, teilnehmer.Jahrgang DESC"; 
    //echo $sql;
-   $res = mysql_query($sql);
-   $num = mysql_num_rows($res);
+   $res = mysqli_query($db, $sql);
+   $num = mysqli_num_rows($res);
 	//echo "$num";
 	if($_POST!=NULL && ($_POST['Nachname']==NULL && $_POST['Vorname']==NULL))
    {
@@ -181,20 +191,20 @@ function date_mysql2german($date) {
 
 	   for ($i=0; $i<$num; $i++)
 	   {
-		  $tk = mysql_result($res, $i, "TeilnehmerKey");
-		  $nn = mysql_result($res, $i, "name");
-		  $vn = mysql_result($res, $i, "vorname");
-		  $pn = mysql_result($res, $i, "ort");
-		  $ge = mysql_result($res, $i, "jahrgang");
-		  $gt = mysql_result($res, $i, "club");
+		  $tk = mysqli_result($res, $i, "TeilnehmerKey");
+		  $nn = mysqli_result($res, $i, "Name");
+		  $vn = mysqli_result($res, $i, "Vorname");
+		  $pn = mysqli_result($res, $i, "Ort");
+		  $ge = mysqli_result($res, $i, "Jahrgang");
+		  $gt = mysqli_result($res, $i, "Club");
 		  // Abfragen der Anzahl Fahrten
 		  $sql = "SELECT count(*) AS anzahl FROM zeiten WHERE TeilnehmerKey= $tk";
-		  $res_num = mysql_query($sql);
-		  $nz = mysql_result($res_num, 0, "anzahl");		
+		  $res_num = mysqli_query($db, $sql);
+		  $nz = mysqli_result($res_num, 0, "anzahl");		
 		   // Abfragen der Anzahl Fahrten insgesamt
 		  //$sql = "SELECT count(*) AS anzahl FROM zeiten WHERE TeilnehmerKey= $tk";
-		  //$res_num = mysql_query($sql);
-		  //$gz = mysql_result($res_num, 0, "anzahl");	
+		  //$res_num = mysqli_query($db, $sql);
+		  //$gz = mysqli_result($res_num, 0, "anzahl");	
 		  
 		  // Entscheid für die Farbe der Markierung
 		  
@@ -210,7 +220,7 @@ function date_mysql2german($date) {
 	   echo "</table>";
     }
 
-   mysql_close($db);
+   mysqli_close($db);
 ?>
 
 

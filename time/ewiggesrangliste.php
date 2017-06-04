@@ -20,11 +20,11 @@
  *******************************************************************************
  * brief    Darstellung der ewigen Gesamtrangliste aller Rennen inkl. verschiedener Filterfunktionen
  * 
- * version		1.0.0
- * date		    30.09.2010	
+ * version		2.0.0
+ * date		    04.06.2017	
  * author		R. Zoss
  * 
- * changelog:	- 
+ * changelog:	- Aktualisierungen für PHP 7.x
  *
  *******************************************************************************
  */
@@ -34,7 +34,18 @@ function date_mysql2german($date) {
     
     return    sprintf("%02d.%02d.%04d", $d[2], $d[1], $d[0]);
 }
- 
+
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
+}
  
 	// Verbindung mit der Datenbank herstellen
 
@@ -51,9 +62,8 @@ function date_mysql2german($date) {
 	$db_passwort = 'KGloQyRd';
          
 	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+	$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    		or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-	$db_check = @ mysql_select_db ( $db_name );  
 	// Aktuelles Datum holen
 	$datum = getdate(time());
 	
@@ -64,8 +74,8 @@ $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
 
    $sql = "SELECT count(*) as Yearcnt FROM `strecken` WHERE StreckentypKey=1 AND Enddatum < '$datum_str'";
    //echo $sql;
-   $res = mysql_query($sql);
-   $race_per_year = mysql_result($res, 0, "Yearcnt");		
+   $res = mysqli_query($db, $sql);
+   $race_per_year = mysqli_result($res, 0, "Yearcnt");		
 
    $sql = "SELECT TeilnehmerKey, Name, Vorname, Ort, Jahrgang, Club, SEC_TO_TIME(sum(TIME_TO_SEC(Fahrzeit))) as Totaltime FROM 
 		   (SELECT Name, Vorname, Ort, Jahrgang, Club, zeiten.TeilnehmerKey, min(Fahrzeit) as Fahrzeit FROM zeiten,strecken, 
@@ -75,8 +85,8 @@ $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
 		   
    
    //echo $sql;
-   $res = mysql_query($sql);
-   $num = mysql_num_rows($res);
+   $res = mysqli_query($db, $sql);
+   $num = mysqli_num_rows($res);
    
 
     echo "<h1>Rangliste: \"Ewige Gesamtrangliste\"</h1>";
@@ -100,13 +110,13 @@ $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
    {
       //echo "For: $i";
      
-      $tk = mysql_result($res, $i, "TeilnehmerKey");
-	  $nn = mysql_result($res, $i, "name");
-      $vn = mysql_result($res, $i, "vorname");
-      $pn = mysql_result($res, $i, "ort");
-      $ge = mysql_result($res, $i, "jahrgang");
-      $gt = mysql_result($res, $i, "club");
-      $gs = mysql_result($res, $i, "Totaltime");
+      $tk = mysqli_result($res, $i, "TeilnehmerKey");
+	  $nn = mysqli_result($res, $i, "Name");
+      $vn = mysqli_result($res, $i, "Vorname");
+      $pn = mysqli_result($res, $i, "Ort");
+      $ge = mysqli_result($res, $i, "Jahrgang");
+      $gt = mysqli_result($res, $i, "Club");
+      $gs = mysqli_result($res, $i, "Totaltime");
 //      echo $tk, $nn, $vn;
       if($i==0) {
 		$rang=0;
@@ -116,8 +126,8 @@ $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
 	  $sql = "SELECT COUNT(tmp) as sum FROM (SELECT count(*) as tmp FROM zeiten,strecken WHERE 
 		      strecken.StreckenKey=zeiten.StreckenKey AND TeilnehmerKey = $tk AND StreckentypKey=1 AND strecken.Enddatum < '$datum_str' 
 		      GROUP BY zeiten.StreckenKey) as tncnt";
-   	  $res_num = mysql_query($sql);
-      $nz = mysql_result($res_num, 0, "sum");
+   	  $res_num = mysqli_query($db, $sql);
+      $nz = mysqli_result($res_num, 0, "sum");
       
       //echo "$nz / $race_per_year";
       
@@ -141,7 +151,7 @@ $datum_str="$datum[year]-$datum[mon]-$datum[mday]";
    echo "</table>";
    
   
-   mysql_close($db);
+   mysqli_close($db);
 ?>
 
 

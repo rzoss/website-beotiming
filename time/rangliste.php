@@ -23,18 +23,11 @@
  *******************************************************************************
  * brief    Darstellung der Rangliste aller Rennen inkl. verschiedener Filterfunktionen
  * 
- * version		1.3.1
- * date		    27.12.2010	
+ * version		2.0.0
+ * date		    04.06.2017	
  * author		R. Zoss
  * 
- * changelog:	- Hinzufügen einer Spalte zum Anzeigen der Teilnahmezahl (v1.1)
- * 		      - Farbliches Hervorheben der aktuellsten Zeiten	(v1.2)
- *		         - (BUG) Zeitverschiebung des Servers berücksichtigen
- *             - Grösser und kleiner-GLEICH bei Rennauswahl
- *					- Fehler nach Jahreswechsel bei der Auswahl des Rennens gefixt.
- * 				- Logo der Standorte hinzugefügt
- * 				- Logo dynamisch pro Rangliste gemäss Angaben in der Datenbank (Tabelle Logo)
- * 				- Reihenfolge der Rennen bei Jahresauswahl gefixt
+ * changelog:	- Aktualisierungen für PHP 7.x
  *
  *******************************************************************************
  */
@@ -43,6 +36,18 @@ function date_mysql2german($date) {
     $d    =    explode("-",$date);
     
     return    sprintf("%02d.%02d.%04d", $d[2], $d[1], $d[0]);
+}
+
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
 }
  
  
@@ -61,10 +66,9 @@ function date_mysql2german($date) {
 	$db_passwort = 'KGloQyRd';
          
 	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+	$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    		or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-	$db_check = @ mysql_select_db ( $db_name );  
-	// Aktuelles Datum holen
+		// Aktuelles Datum holen
 	$datum = getdate(time());
 	$highlight = "";
 	if(($_POST!=NULL && $_POST['rennen']!=NULL) || !empty($_GET))
@@ -103,30 +107,30 @@ function date_mysql2german($date) {
 		
 		// Ist der aktuelle StreckenKey für das gewählte Jahr gültig?
 		// Falls nicht, wurde ein anderes Jahr ausgewählt
-		$res = mysql_query("SELECT count(*) AS existiert 
+		$res = mysqli_query($db, "SELECT count(*) AS existiert 
 					FROM strecken WHERE jahr = '$jahrPost' AND StreckenKey=$StreckenKey ORDER BY Enddatum ASC");
-		$exists = mysql_result($res, 0, "existiert");		
+		$exists = mysqli_result($res, 0, "existiert");		
 		// erstes Rennen wählen, falls nicht das aktuelle Jahr gewählt wurde
 		if($exists==0 && $jahrPost!=$datum[year]){
-			$res = mysql_query("SELECT StreckenKey " .
+			$res = mysqli_query($db, "SELECT StreckenKey " .
 		 					   "FROM strecken WHERE jahr = '$jahrPost' ORDER BY Enddatum ASC");
-			$StreckenKey = mysql_result($res, 0, "StreckenKey");
+			$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 		}else if($exists==0){
 			// Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwählen
 		 	$datum_str="$datum[year]-$datum[mon]-$datum[mday]";
-		 	$res = mysql_query("SELECT Streckenname, StreckenKey " .
+		 	$res = mysqli_query($db, "SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum >= '$datum_str' AND " .
 		 					   "Startdatum <= '$datum_str' AND jahr = '$jahrPost' ORDER BY Enddatum ASC");
-		 	if(mysql_num_rows($res)!=0){
+		 	if(mysqli_num_rows($res)!=0){
 		 		// Name des Rennens speichern, falls eines im Moment läuft
-		 		$rennenPost = mysql_result($res, 0, "Streckenname");
-		 		$StreckenKey = mysql_result($res, 0, "StreckenKey");
+		 		$rennenPost = mysqli_result($res, 0, "Streckenname");
+		 		$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 		 	}else{
 		 		// Letztes, abgeschlossenes Rennen wählen, falls keines läuft
-		 		$res = mysql_query("SELECT Streckenname, StreckenKey " .
+		 		$res = mysqli_query($db, "SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum < '$datum_str' ORDER BY Enddatum DESC");
-		 		$rennenPost = mysql_result($res, 0, "Streckenname");
-		 		$StreckenKey = mysql_result($res, 0, "StreckenKey");
+		 		$rennenPost = mysqli_result($res, 0, "Streckenname");
+		 		$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 		 	}
 		}else{
 			// nichts tun, da kein neues Jahr gewählt wurde
@@ -137,38 +141,38 @@ function date_mysql2german($date) {
  		 
 		 // Name des aktuellen Rennens herausfinden um diesen in der ComboBox auszuwählen
 		 // Prüfen ob Rennen im aktuellen Jahr vorhanden sind. Verwende 31-12-<letztes Jahr> andernfalls. 
-		 $res = mysql_query("SELECT count(*) AS existiert 
+		 $res = mysqli_query($db, "SELECT count(*) AS existiert 
 					FROM strecken WHERE jahr = '$datum[year]'");
-		 $exists = mysql_result($res, 0, "existiert");	
+		 $exists = mysqli_result($res, 0, "existiert");	
 		 if($exists==0){
-			 $res = mysql_query("SELECT MAX(jahr) AS jahr FROM strecken");
-			 $datum_jahr = mysql_result($res, 0, "jahr");
+			 $res = mysqli_query($db, "SELECT MAX(jahr) AS jahr FROM strecken");
+			 $datum_jahr = mysqli_result($res, 0, "jahr");
 			 $datum_str="$datum_jahr-12-31";
 		 }else{
 			 $datum_jahr="$datum[year]";
 			 $datum_str="$datum_jahr-$datum[mon]-$datum[mday]";
 		 }
 		 
-		 $res = mysql_query("SELECT Streckenname, StreckenKey " .
+		 $res = mysqli_query($db, "SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND " .
 		 					   "Startdatum < '$datum_str' AND jahr = '$datum_jahr' ORDER BY Enddatum ASC");
-		 if(mysql_num_rows($res)!=0){
+		 if(mysqli_num_rows($res)!=0){
 		 	// Name des Rennens speichern, falls eines im Moment läuft
-		 	$rennenPost = mysql_result($res, 0, "Streckenname");
-		 	$StreckenKey = mysql_result($res, 0, "StreckenKey");
+		 	$rennenPost = mysqli_result($res, 0, "Streckenname");
+		 	$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 		 }else{
 		 	// Letztes, abgeschlossenes Rennen wählen, falls keines läuft
-		 	$res = mysql_query("SELECT Streckenname, StreckenKey " .
+		 	$res = mysqli_query($db, "SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum < '$datum_str' AND Jahr = '$datum_jahr' ORDER BY Enddatum DESC");
-			if(mysql_num_rows($res)!=0){
-				$rennenPost = mysql_result($res, 0, "Streckenname");
-				$StreckenKey = mysql_result($res, 0, "StreckenKey");
+			if(mysqli_num_rows($res)!=0){
+				$rennenPost = mysqli_result($res, 0, "Streckenname");
+				$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 			}else{
-				$res = mysql_query("SELECT Streckenname, StreckenKey " .
+				$res = mysqli_query($db, "SELECT Streckenname, StreckenKey " .
 		 					   "FROM strecken WHERE Enddatum > '$datum_str' AND Jahr = '$datum_jahr' ORDER BY Enddatum ASC");
 
-				$rennenPost = mysql_result($res, 0, "Streckenname");
-				$StreckenKey = mysql_result($res, 0, "StreckenKey");
+				$rennenPost = mysqli_result($res, 0, "Streckenname");
+				$StreckenKey = mysqli_result($res, 0, "StreckenKey");
 			}
 			
 		 }
@@ -188,15 +192,15 @@ function date_mysql2german($date) {
 
 	// Logo Anzeigen
 
-	$res = mysql_query("SELECT bild, text, breite, beschriftung, url " .
+	$res = mysqli_query($db, "SELECT bild, text, breite, beschriftung, url " .
 						"FROM logo WHERE strecke = '$StreckenKey'");
 						
 	if ($res) {
-    	$logo_name = mysql_result($res, 0, "bild");
-		$logo_text = mysql_result($res, 0, "text");
-		$logo_breite = mysql_result($res, 0, "breite");
-		$logo_beschriftung = mysql_result($res, 0, "beschriftung");
-		$logo_url = mysql_result($res, 0, "url");	
+    	$logo_name = mysqli_result($res, 0, "bild");
+		$logo_text = mysqli_result($res, 0, "text");
+		$logo_breite = mysqli_result($res, 0, "breite");
+		$logo_beschriftung = mysqli_result($res, 0, "beschriftung");
+		$logo_url = mysqli_result($res, 0, "url");	
 	
 		echo "<p>$logo_text</p>";
 		if($logo_url == ""){
@@ -225,18 +229,18 @@ function date_mysql2german($date) {
                 "AND strecken.StreckentypKey=streckentyp.StreckentypKey ORDER BY Enddatum ASC";
          
 
-		 $res = mysql_query($sql);
+		 $res = mysqli_query($db, $sql);
                                  
-         $num = mysql_num_rows($res);
+         $num = mysqli_num_rows($res);
 
 
          for ($i=0; $i<$num; $i++){
-         	$name = mysql_result($res, $i, "Streckenname");
-         	$nr = mysql_result($res, $i, "StreckenKey");
-         	$typ = mysql_result($res, $i, "Typ");
-			$startdate = mysql_result($res, $i, "Startdatum");
+         	$name = mysqli_result($res, $i, "Streckenname");
+         	$nr = mysqli_result($res, $i, "StreckenKey");
+         	$typ = mysqli_result($res, $i, "Typ");
+			$startdate = mysqli_result($res, $i, "Startdatum");
 			$startdate=date_mysql2german($startdate);
-			$enddate = mysql_result($res, $i, "Enddatum");
+			$enddate = mysqli_result($res, $i, "Enddatum");
 			$enddate=date_mysql2german($enddate);
             if($nr==$StreckenKey){
                 echo "<option value=$nr selected=\"selected\">$name, $typ ($startdate - $enddate)</option>";
@@ -248,13 +252,13 @@ function date_mysql2german($date) {
 		 echo "</td><td>";
 		 echo "<select name=\"jahr\">";
      
-          $res = mysql_query("SELECT strecken.Jahr
+          $res = mysqli_query($db, "SELECT strecken.Jahr
                                  FROM strecken
                                  GROUP BY strecken.Jahr");
-          $num = mysql_num_rows($res);
+          $num = mysqli_num_rows($res);
 		  // ComboBox mit den vorhandenen Jahren auffüllen und das aktuelle Jahr wählen
           for ($i=0; $i<$num; $i++){
-          	$nn = mysql_result($res, $i, "Jahr");
+          	$nn = mysqli_result($res, $i, "Jahr");
             if($nn==$jahrPost){
                 echo "<option value=$nn selected=\"selected\">$nn</option>";
             }else{
@@ -272,8 +276,8 @@ function date_mysql2german($date) {
 
 <?php
    $sql = "SELECT count(*) AS anzahl FROM zeiten WHERE StreckenKey= $StreckenKey";
-   $res = mysql_query($sql);
-   $numzeiten = mysql_result($res, 0, "anzahl");		
+   $res = mysqli_query($db, $sql);
+   $numzeiten = mysqli_result($res, 0, "anzahl");		
 
 
    $sql = "SELECT teilnehmer.TeilnehmerKey, teilnehmer.name, teilnehmer.vorname, teilnehmer.ort, 
@@ -290,8 +294,8 @@ function date_mysql2german($date) {
    	 	 GROUP BY teilnehmer.TeilnehmerKey
     	 ORDER BY min(zeiten.Fahrzeit), teilnehmer.jahrgang"; 
    //echo $sql;
-   $res = mysql_query($sql);
-   $num = mysql_num_rows($res);
+   $res = mysqli_query($db, $sql);
+   $num = mysqli_num_rows($res);
 
 
 
@@ -321,30 +325,30 @@ function date_mysql2german($date) {
 
   for ($i=0; $i<$num; $i++)
    {
-      $tk = mysql_result($res, $i, "TeilnehmerKey");
-	  $nn = mysql_result($res, $i, "name");
-      $vn = mysql_result($res, $i, "vorname");
-      $pn = mysql_result($res, $i, "ort");
-      $ge = mysql_result($res, $i, "jahrgang");
-      $gt = mysql_result($res, $i, "club");
-      $gs = mysql_result($res, $i, "fahrzeit");
-      $gu = mysql_result($res, $i, "rueckstand");
+      $tk = mysqli_result($res, $i, "TeilnehmerKey");
+	  $nn = mysqli_result($res, $i, "name");
+      $vn = mysqli_result($res, $i, "vorname");
+      $pn = mysqli_result($res, $i, "ort");
+      $ge = mysqli_result($res, $i, "jahrgang");
+      $gt = mysqli_result($res, $i, "club");
+      $gs = mysqli_result($res, $i, "fahrzeit");
+      $gu = mysqli_result($res, $i, "rueckstand");
       $lf = $i + 1;
 	  // Abfragen der Anzahl Fahrten
 	  $sql = "SELECT count(*) AS anzahl FROM zeiten WHERE StreckenKey= $StreckenKey AND TeilnehmerKey= $tk";
-   	  $res_num = mysql_query($sql);
-      $nz = mysql_result($res_num, 0, "anzahl");		
+   	  $res_num = mysqli_query($db, $sql);
+      $nz = mysqli_result($res_num, 0, "anzahl");		
 	   // Abfragen der Anzahl Fahrten insgesamt
 	  //$sql = "SELECT count(*) AS anzahl FROM zeiten WHERE TeilnehmerKey= $tk";
-   	  //$res_num = mysql_query($sql);
-      //$gz = mysql_result($res_num, 0, "anzahl");	
+   	  //$res_num = mysqli_query($db, $sql);
+      //$gz = mysqli_result($res_num, 0, "anzahl");	
 	  
 	  // Entscheid für die Farbe der Markierung
 	  
 	  $sql = "SELECT Endzeit FROM zeiten WHERE StreckenKey= $StreckenKey AND TeilnehmerKey= $tk ORDER BY Fahrzeit";
-   	  $res_num = mysql_query($sql);
+   	  $res_num = mysqli_query($db, $sql);
           
-	  $ez = @mysql_result($res_num, 0, "Endzeit"); 
+	  $ez = @mysqli_result($res_num, 0, "Endzeit"); 
 	  // Berechnen der Differenz, inkl. Berücksichtigung der Zeitverschiebung des Servers von 1h
 	  $ez = (time()+3600-dateMysql($ez))/(3600*24);
 	  
@@ -402,7 +406,7 @@ function date_mysql2german($date) {
    
    
  }
-   mysql_close($db);
+   mysqli_close($db);
 ?>
 
 

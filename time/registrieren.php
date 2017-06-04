@@ -14,12 +14,25 @@
  *******************************************************************************
  * brief    Skript zum Auswerten der eingegebenen Formulardaten zur Registrierung einer persönlichen Karte
  * 
- * version		1.0
- * date		11.06.2008
+ * version		2.0
+ * date		04.06.2017
  * author		R. Zoss
  *
  *******************************************************************************
  */
+ 
+
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
+} 
  
 // Funktion zum Verbinden der gewünschten Datenbank
 function database_connect($dbname) {
@@ -37,15 +50,14 @@ function database_connect($dbname) {
     $db_passworttime = 'KGloQyRd';
 	
 	
+	
 	/* Erstellt Connect zu Datenbank her */
 	switch($dbname){
-	case "joomla":	$db_joomla = @ mysql_connect ( $db_server, $db_userjoomla, $db_passwortjoomla )
+	case "joomla":	$db_joomla = @ mysqli_connect ( $db_server, $db_userjoomla, $db_passwortjoomla, $db_namejoomla )
 							or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-					$db_check = mysql_select_db ( $db_namejoomla );
 					break;
-	case "time":	$db_time = @ mysql_connect ( $db_server, $db_usertime, $db_passworttime )
+	case "time":	$db_time = @ mysqli_connect ( $db_server, $db_usertime, $db_passworttime, $db_nametime )
 							or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
-					$db_check = mysql_select_db ( $db_nametime );
 					break;
 	}
 	return $db_check;
@@ -57,38 +69,38 @@ database_connect("joomla");
 
 // Prüfen ob neue Einträge vorhanden sind
 $sql = "SELECT id, submitted FROM jos_facileforms_records WHERE form =24 AND exported =0 AND viewed=0";
-$res_newentries = mysql_query($sql);
-$num_newentries = mysql_affected_rows();
+$res_newentries = mysqli_query($db, $sql);
+$num_newentries = mysqli_affected_rows();
 
 // Neue Einträge abarbeiten
 for($i=0;$i<$num_newentries;++$i){
-	$record_num = mysql_result($res_newentries,$i,"id");
-	$submitted = mysql_result($res_newentries,$i,"submitted");
+	$record_num = mysqli_result($res_newentries,$i,"id");
+	$submitted = mysqli_result($res_newentries,$i,"submitted");
 	// Auslesen der eingetragenen Daten.
 	// Dies kann mit fixen Offset gemacht werden, da immer alle Felder eingetragen werden.
 	$sql = "SELECT name, value FROM jos_facileforms_subrecords WHERE record=$record_num ORDER BY id";
-	$res = mysql_query($sql);
-	$num = mysql_affected_rows();
-	$nan = mysql_result($res,0,"value");
-	$von = mysql_result($res,1,"value");
-	$adr = mysql_result($res,2,"value");
-	$plz = mysql_result($res,3,"value");
-	$ort = mysql_result($res,4,"value");
-	$nat = mysql_result($res,5,"value");
-	$jah = mysql_result($res,6,"value");
-	$ges = mysql_result($res,7,"value");
-	$clu = mysql_result($res,8,"value");
-	$ema = mysql_result($res,9,"value");
-	$tel = mysql_result($res,10,"value");
-	$mob = mysql_result($res,11,"value");
-	$snr = mysql_result($res,12,"value");
+	$res = mysqli_query($db, $sql);
+	$num = mysqli_affected_rows();
+	$nan = mysqli_result($res,0,"value");
+	$von = mysqli_result($res,1,"value");
+	$adr = mysqli_result($res,2,"value");
+	$plz = mysqli_result($res,3,"value");
+	$ort = mysqli_result($res,4,"value");
+	$nat = mysqli_result($res,5,"value");
+	$jah = mysqli_result($res,6,"value");
+	$ges = mysqli_result($res,7,"value");
+	$clu = mysqli_result($res,8,"value");
+	$ema = mysqli_result($res,9,"value");
+	$tel = mysqli_result($res,10,"value");
+	$mob = mysqli_result($res,11,"value");
+	$snr = mysqli_result($res,12,"value");
 	// Seriennummer in Grossbuchstaben wandeln (Vereinheitlichung)
 	$snr = strtoupper($snr);
 		
 	echo "$nan $von $adr $plz $ort $nat $ema $jah $ges $clu $tel $mob $snr <br>";
 	
 	// Eintragen der Daten in die Time-Datenbank
-	mysql_close();
+	mysqli_close();
 	database_connect("time");
 	// Prüfen ob der Teilnehmer schon vorhanden ist
 	if(strstr($adr," ")){
@@ -103,16 +115,16 @@ for($i=0;$i<$num_newentries;++$i){
 	$sql = "SELECT TeilnehmerKey, SNR_RFID FROM teilnehmer 
 		    WHERE Name='$nan' AND Vorname='$von' AND Adresse 
 		    LIKE '$adresse' AND PLZ='$plz' AND Ort='$ort'";
-	$res = mysql_query($sql);
-	$num = mysql_affected_rows();
-	if($num == 1 && is_null(mysql_result($res,0,"SNR_RFID"))){
+	$res = mysqli_query($db, $sql);
+	$num = mysqli_affected_rows();
+	if($num == 1 && is_null(mysqli_result($res,0,"SNR_RFID"))){
 		// Übereinstimmung gefunden und noch keine Karte registriert
 		echo "Übereinstimmung";
-		$TeilnehmerKey = mysql_result($res,0,"TeilnehmerKey");
+		$TeilnehmerKey = mysqli_result($res,0,"TeilnehmerKey");
 		$sql = "UPDATE teilnehmer SET SNR_RFID = '$snr' WHERE TeilnehmerKey =$TeilnehmerKey";
-		mysql_query("LOCK TABLES teilnehmer WRITE");
-		mysql_query($sql);
-		mysql_query("UNLOCK TABLES");
+		mysqli_query($db, "LOCK TABLES teilnehmer WRITE");
+		mysqli_query($db, $sql);
+		mysqli_query($db, "UNLOCK TABLES");
 		/* Nachricht */
 		$message = "<html>
 			<head>
@@ -143,13 +155,13 @@ for($i=0;$i<$num_newentries;++$i){
 		send_mail('success', $message, $vor, $nan, $ema, $REMOTE_ADDR);
 		
 		// Exported und Viewed in Joomla-DB auf 1 schalten, um den Datensatz als ausgewertet zu markieren
-		mysql_close();
+		mysqli_close();
 		database_connect("joomla");
 		$sql="UPDATE jos_facileforms_records SET viewed = '1', exported = '1'
 			  WHERE id =$record_num";
-		mysql_query("LOCK TABLES jos_facileforms_records WRITE");
-		mysql_query($sql);
-		mysql_query("UNLOCK TABLES");
+		mysqli_query($db, "LOCK TABLES jos_facileforms_records WRITE");
+		mysqli_query($db, $sql);
+		mysqli_query($db, "UNLOCK TABLES");
 		
 	}else{
 		// Keine sichere Übereinstimmung --> manuelle Eintragung
@@ -199,12 +211,12 @@ for($i=0;$i<$num_newentries;++$i){
 		";
 		send_mail('no',$message, $vor, $nan, $ema, $REMOTE_ADDR);
 		// Nur Viewed in Joomla-DB auf 1 schalten, um den Datensatz als nicht ausgewertet, aber betrachtet zu markieren
-		mysql_close();
+		mysqli_close();
 		database_connect("joomla");
 		$sql="UPDATE jos_facileforms_records SET viewed = '1' WHERE id =$record_num";
-		mysql_query("LOCK TABLES jos_facileforms_records WRITE");
-		mysql_query($sql);
-		mysql_query("UNLOCK TABLES");
+		mysqli_query($db, "LOCK TABLES jos_facileforms_records WRITE");
+		mysqli_query($db, $sql);
+		mysqli_query($db, "UNLOCK TABLES");
 	}
 } // end for(...)	
 	

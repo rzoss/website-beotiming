@@ -15,8 +15,8 @@
  *******************************************************************************
  * brief    Skript zum Testen der Datenbank anbindung
  * 
- * version		1.0
- * date		08.08.2010
+ * version		2.0
+ * date		04.06.2017
  * author		R. Zoss
  *
  *******************************************************************************
@@ -36,42 +36,15 @@
 	$db_passwort = 'KGloQyRd';
          
 	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
+	$db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    		or die ( 'Konnte keine Verbindung zur Datenbank \'web246-time\' herstellen' );
-	$db_check = @ mysql_select_db ( $db_name ); 
 	
-	if($db_check) 
+	if($db) 
 		echo "<p>web246-time on www.beo-timing.ch successfully connected<br></p>";
 		
-	mysql_close($db);  // Logout der Datenbank	
+	mysqli_close($db);  // Logout der Datenbank	
 	
-	
-		/* Datenbankserver - In der Regel die IP */
-	$db_server = 'www.beo-timing.ch';
-
-	/* Datenbankname */
-	$db_name = 'web246-timetime';
-
-	/* Datenbankuser */
-	$db_user = 'web246-timetime';
-
-	/* Datenbankpasswort */
-	$db_passwort = 'time09';
-         
-	/* Erstellt Connect zu Datenbank her */
-	$db = @ mysql_connect ( $db_server, $db_user, $db_passwort )
-   		or die ( 'Konnte keine Verbindung zur Datenbank \'web246-timetime\' herstellen' );
-	$db_check = @ mysql_select_db ( $db_name ); 
-	
-	if($db_check) 
-		echo "<p>web246-timetime on www.beo-timing.ch successfully connected<br></p>";
 		
-	mysql_close($db);  // Logout der Datenbank	
-	
-	
-	
-	
-	
 	
 	
 // Ende PHP
