@@ -113,7 +113,7 @@ if(!file_exists("ftp_sema")){
 				FROM `teilnehmer`
 				WHERE `SNR_RFID` = \"$rfid_snr\" AND `name`!='(noch'";
 		$res = mysqli_query($db, $sql);
-		$num = mysqli_affected_rows();
+		$num = mysqli_affected_rows($db);
 		echo "Resultat feste Abfrage: $num";
 		
 		// plausibility check:
