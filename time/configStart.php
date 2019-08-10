@@ -122,17 +122,18 @@ $db = @ mysqli_connect ( $db_server, $db_user, $db_passwort, $db_name )
    or die ( 'Konnte keine Verbindung zur Datenbank herstellen' );
 
 
-$currdate = date('Y-m-d');
+$currdate = date('Y-m-d H:i:s');
+echo "$currdate";
 
 // Aktuelle Strecke lesen
-$sql = "SELECT * FROM `strecken` WHERE Startdatum<='$currdate' AND Enddatum>='$currdate'";
+$sql = "SELECT * FROM `strecken` WHERE StartDatumConfig<='$currdate' AND EndDatumConfig>='$currdate'";
 $res = mysqli_query($db, $sql);
 
 $sk = mysqli_result($res, 0, "StreckenKey");
 $rt = mysqli_result($res, 0, "RoadType");
 $sn = mysqli_result($res, 0, "ShortName");
 
-//echo "<p><b>$sk</b><br>$rt<br>$sn</p><br>";
+echo "<p><b>$sk</b><br>$rt<br>$sn</p><br>";
 
 
 // Ohne Gruppen analysieren
